@@ -1,0 +1,66 @@
+{
+  "id": "kbQuestionDigest1",
+  "name": "Knowledge base question digest",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4b0f6f1e-0001-4a1a-9c11-000000000001",
+      "name": "Run manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Common questions from new employees (in production these come from a form, Slack or a help desk queue).\nconst questions = [\n  'How do I reset my password?',\n  'What is the meal limit when travelling?',\n  'When do I enrol in benefits?',\n  'Can I paste customer data into an AI tool?',\n  'Is there a parental leave top-up?'\n];\nreturn questions.map(question => ({ json: { question } }));"
+      },
+      "id": "4b0f6f1e-0002-4a1a-9c11-000000000002",
+      "name": "Questions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.KB_URL || 'http://localhost:3000' }}/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "q", "value": "={{ $json.question }}" },
+            { "name": "limit", "value": "1" }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Client", "value": "n8n" },
+            { "name": "X-User", "value": "n8n-onboarding-digest" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4b0f6f1e-0003-4a1a-9c11-000000000003",
+      "name": "Search knowledge base",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One digest item: each question with the best answer and its source, or a flag for the AI Enablement team.\nconst rows = $input.all().map(item => {\n  const top = item.json.results[0];\n  return top\n    ? { question: item.json.query, answer: top.snippet, source: top.source, answered: true }\n    : { question: item.json.query, answer: 'Not in the knowledge base yet: flagged for the AI Enablement team.', source: null, answered: false };\n});\nconst answered = rows.filter(r => r.answered).length;\nconst text = rows.map((r, i) => `${i + 1}. ${r.question}\\n   ${r.answer}${r.source ? `\\n   Source: ${r.source}` : ''}`).join('\\n\\n');\nreturn [{ json: { answered, total: rows.length, gaps: rows.filter(r => !r.answered).map(r => r.question), digest: text, rows } }];"
+      },
+      "id": "4b0f6f1e-0004-4a1a-9c11-000000000004",
+      "name": "Build digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Run manually": { "main": [[{ "node": "Questions", "type": "main", "index": 0 }]] },
+    "Questions": { "main": [[{ "node": "Search knowledge base", "type": "main", "index": 0 }]] },
+    "Search knowledge base": { "main": [[{ "node": "Build digest", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
