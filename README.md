@@ -17,7 +17,7 @@ The knowledge base in `kb/` is a small sample (expenses, IT help, onboarding, pu
 | REST API (`src/app.ts`) | `/api/search`, `/api/documents`, `/api/impact` for integrations that don't speak MCP (n8n HTTP Request node, internal apps). |
 | AI impact report (`src/usage.ts`) | Lookups by channel (MCP, REST, n8n), active users, answered rate, estimated time saved, unanswered questions. |
 | n8n workflows (`n8n/`) | **Knowledge base question digest**: answers a list of questions with sources and flags gaps. **Weekly AI impact report**: every Monday, turns usage into a short report for leaders. |
-| Training (`docs/training/`) | Workshop 1: connect your AI assistant (MCP). Workshop 2: build your first n8n automation. Prompt engineering cheat sheet. |
+| Training (`docs/training/`) | Workshop 1: connect your AI assistant (MCP). Workshop 2: build your first n8n automation. Prompt engineering cheat sheet. A ready-to-run **30-minute hands-on workshop kit** (`docs/training/workshop/`): facilitator guide, participant handout, feedback form and a starter workflow (`n8n/workshop-starter.json`) that runs without the API. |
 | Best practices (`docs/automation-patterns.md`) | How automations are built, tested and measured. |
 
 ## Quality

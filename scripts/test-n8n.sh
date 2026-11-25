@@ -39,3 +39,11 @@ echo "$REPORT" | node -e '
   if (!/n8n: 5/.test(r.report) && /by 1 person/.test(r.report) || !/80% of searches/.test(r.report)) throw new Error("report numbers are wrong");
   if (r.gaps[0] !== "Is there a parental leave top-up?") throw new Error("gap missing from report");
   console.log("OK: report counts the digest lookups, answered rate and gaps");'
+
+echo "== Workshop starter (runs without the API)"
+STARTER=$(run workshopStarter1)
+echo "$STARTER" | node -e '
+  const d = JSON.parse(require("fs").readFileSync(0, "utf8"));
+  if (d.total !== 4 || d.answered !== 3) throw new Error(`expected 3 of 4 answered, got ${d.answered} of ${d.total}`);
+  if (d.gaps[0] !== "How do I book a meeting room?") throw new Error("meeting room gap not flagged");
+  console.log("OK: workshop starter answers 3 of 4 and flags the meeting room gap");'
